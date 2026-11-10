@@ -1,0 +1,125 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans:
+    'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', 'Dubai', Tahoma, ui-sans-serif,
+    system-ui, sans-serif;
+
+  --color-brand-50: #f0f7fc;
+  --color-brand-100: #dcecf7;
+  --color-brand-200: #bcd9ee;
+  --color-brand-300: #8dbfdf;
+  --color-brand-400: #57a0c9;
+  --color-brand-500: #2f84b3;
+  --color-brand-600: #1f6a97;
+  --color-brand-700: #1a557a;
+  --color-brand-800: #174764;
+  --color-brand-900: #123a54;
+  --color-brand-950: #0b2639;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+    font-feature-settings: 'kern';
+  }
+
+  ::selection {
+    @apply bg-brand-200 text-brand-950;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-600;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  input[type='number'] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_32px_-24px_rgba(15,23,42,0.25)];
+  }
+
+  .label {
+    @apply mb-1.5 block text-[13px] font-semibold text-slate-700;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] transition placeholder:text-slate-400 hover:border-slate-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 focus:outline-none disabled:cursor-not-allowed disabled:bg-slate-100;
+  }
+
+  .input-error {
+    @apply border-rose-400 focus:border-rose-500 focus:ring-rose-500/15;
+  }
+
+  .help {
+    @apply mt-1 text-[11.5px] leading-relaxed text-slate-500;
+  }
+
+  .field-error {
+    @apply mt-1 text-[11.5px] font-medium text-rose-600;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 focus-visible:outline-brand-700 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 disabled:opacity-60;
+  }
+
+  .section-kicker {
+    @apply flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-50 text-[12px] font-bold text-brand-700 ring-1 ring-brand-200;
+  }
+
+  .chip {
+    @apply inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-[12.5px] font-medium text-slate-700 transition select-none hover:border-brand-400 hover:bg-brand-50/60;
+  }
+
+  .chip-selected {
+    @apply border-brand-600 bg-brand-600 text-white shadow-sm hover:border-brand-700 hover:bg-brand-700;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  main {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .card {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  body {
+    background: #fff !important;
+  }
+}
