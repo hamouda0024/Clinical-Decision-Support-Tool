@@ -33,10 +33,16 @@ export function TriageBanner({ triage }: { triage: TriageAssessment }) {
           </ul>
         </div>
 
-        <div className="shrink-0 rounded-xl bg-white/60 px-2.5 py-1.5 text-center ring-1 ring-current/10">
-          <p className="text-[9px] font-semibold tracking-wide uppercase opacity-60">EWS</p>
-          <p className="text-xl leading-tight font-bold">{triage.earlyWarningScore}</p>
-          <p className="text-[9px] opacity-60">/ 12</p>
+        <div
+          className="shrink-0 rounded-xl bg-white/60 px-2.5 py-1.5 text-center ring-1 ring-current/10"
+          title="درجة إنذار مبسّطة من خمس علامات حيوية — ليست NEWS2"
+        >
+          <p className="text-[9px] font-semibold tracking-wide uppercase opacity-60">EWS مبسّط</p>
+          <p className="text-xl leading-tight font-bold">
+            {triage.earlyWarningScore}
+            <span className="text-[10px] font-medium opacity-60"> / {triage.earlyWarningMax}</span>
+          </p>
+          <p className="text-[9px] opacity-60">ليست NEWS2</p>
         </div>
       </div>
     </section>

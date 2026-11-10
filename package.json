@@ -1,6 +1,6 @@
 {
   "name": "clinical-decision-support-tool",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "Clinical decision support tool for differential diagnosis and triage, built for physicians and healthcare practitioners.",

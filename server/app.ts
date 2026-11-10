@@ -7,7 +7,7 @@ import helmet from 'helmet';
 import type { ApiError } from '../shared/types.js';
 import { config } from './config.js';
 import { buildCatalog } from './data/catalog-response.js';
-import { KNOWLEDGE_BASE_SIZE } from './data/knowledge-base.js';
+import { KNOWLEDGE_BASE_GOVERNANCE, KNOWLEDGE_BASE_SIZE } from './data/knowledge-base.js';
 import { ENGINE_VERSION, runAssessment } from './engine/assessment.js';
 import { assessmentSchema, formatIssues } from './validation.js';
 
@@ -99,6 +99,9 @@ export function createApp(): express.Express {
       status: 'ok',
       engineVersion: ENGINE_VERSION,
       knowledgeBaseEntries: KNOWLEDGE_BASE_SIZE,
+      knowledgeBaseSchemaVersion: KNOWLEDGE_BASE_GOVERNANCE.schemaVersion,
+      contentStatus: KNOWLEDGE_BASE_GOVERNANCE.contentStatus,
+      reviewedEntries: KNOWLEDGE_BASE_GOVERNANCE.reviewedEntries,
     });
   });
 

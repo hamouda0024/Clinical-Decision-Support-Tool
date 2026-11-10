@@ -18,7 +18,7 @@ export function Header() {
         <div className="ms-auto flex items-center gap-2">
           <span className="hidden items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600 sm:inline-flex">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden />
-            الإصدار 1.0
+الإصدار 1.1
           </span>
           <a
             href="#disclaimer"

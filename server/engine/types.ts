@@ -1,5 +1,7 @@
 import type {
+  ClinicalReference,
   RecommendedActions,
+  ReviewStatus,
   Sex,
   SpecialtyId,
   VitalId,
@@ -33,6 +35,14 @@ export interface DiseaseSymptom {
   weight: number;
 }
 
+export interface ClinicalReview {
+  status: ReviewStatus;
+  /** Named physician who signed off; required once status is `approved`. */
+  reviewer?: string;
+  /** ISO date of the last review; required once status is `approved`. */
+  lastReviewedAt?: string;
+}
+
 export interface Disease {
   id: string;
   nameAr: string;
@@ -49,4 +59,12 @@ export interface Disease {
   riskFactors: RiskFactor[];
   redFlags: string[];
   actions: RecommendedActions;
+  /**
+   * Physician review state. Optional in code so a new entry can be added without
+   * pretending it was reviewed; the engine treats a missing review as
+   * `unreviewed` and validation forbids claiming `approved` without a signer.
+   */
+  review?: ClinicalReview;
+  /** Authoritative sources backing this entry, never generated automatically. */
+  references?: ClinicalReference[];
 }

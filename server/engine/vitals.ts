@@ -9,8 +9,14 @@ interface Band {
 
 interface VitalRule {
   bands: Band[];
-  /** Simplified NEWS2-style points (0–3) used for the early-warning score. */
+  /**
+   * Points (0–3) of this tool's own simplified early-warning score. The rules are
+   * inspired by common early-warning systems but are not NEWS2: respiratory rate,
+   * consciousness and oxygen delivery are not collected.
+   */
   points: (value: number) => number;
+  /** Maximum points this parameter can contribute. */
+  maxPoints: number;
 }
 
 const RULES: Record<keyof Vitals, VitalRule> = {
@@ -23,6 +29,7 @@ const RULES: Record<keyof Vitals, VitalRule> = {
       { min: 180, status: 'critical_high', noteAr: 'ارتفاع شديد في ضغط الدم — يستدعي تقييماً عاجلاً' },
     ],
     points: (v) => (v <= 90 ? 3 : v <= 100 ? 2 : v <= 110 ? 1 : v <= 219 ? 0 : 3),
+    maxPoints: 3,
   },
   diastolicBP: {
     bands: [
@@ -33,6 +40,7 @@ const RULES: Record<keyof Vitals, VitalRule> = {
       { min: 110, status: 'critical_high', noteAr: 'ارتفاع شديد في الضغط الانبساطي' },
     ],
     points: () => 0,
+    maxPoints: 0,
   },
   heartRate: {
     bands: [
@@ -43,6 +51,7 @@ const RULES: Record<keyof Vitals, VitalRule> = {
       { min: 131, status: 'critical_high', noteAr: 'تسرّع شديد في النبض — يستدعي تقييماً عاجلاً' },
     ],
     points: (v) => (v <= 40 ? 3 : v <= 50 ? 1 : v <= 90 ? 0 : v <= 110 ? 1 : v <= 130 ? 2 : 3),
+    maxPoints: 3,
   },
   temperature: {
     bands: [
@@ -53,6 +62,7 @@ const RULES: Record<keyof Vitals, VitalRule> = {
       { min: 40, status: 'critical_high', noteAr: 'حرارة شديدة الارتفاع — تدبير عاجل' },
     ],
     points: (v) => (v <= 35 ? 3 : v <= 36 ? 1 : v <= 38 ? 0 : v <= 39 ? 1 : 2),
+    maxPoints: 2,
   },
   spo2: {
     bands: [
@@ -61,6 +71,7 @@ const RULES: Record<keyof Vitals, VitalRule> = {
       { min: 94, status: 'normal', noteAr: 'ضمن المدى المقبول' },
     ],
     points: (v) => (v >= 96 ? 0 : v >= 94 ? 1 : v >= 92 ? 2 : 3),
+    maxPoints: 3,
   },
 };
 
@@ -91,8 +102,10 @@ function evaluateOne(id: keyof Vitals, value: number): VitalEvaluation {
 
 export interface VitalsAnalysis {
   evaluations: VitalEvaluation[];
-  /** Simplified early-warning score across measured parameters (max 12 here). */
+  /** Simplified early-warning score across measured parameters. */
   earlyWarningScore: number;
+  /** Highest reachable value of the simplified score (11 with the current rules). */
+  earlyWarningMax: number;
   /** Number of clearly abnormal parameters. */
   abnormalCount: number;
   /** Highest severity weight across single parameters (0–3). */
@@ -103,10 +116,11 @@ export function analyseVitals(vitals: Vitals): VitalsAnalysis {
   const ids = Object.keys(RULES) as (keyof Vitals)[];
   const evaluations = ids.map((id) => evaluateOne(id, vitals[id]));
   const earlyWarningScore = ids.reduce((sum, id) => sum + RULES[id].points(vitals[id]), 0);
+  const earlyWarningMax = ids.reduce((sum, id) => sum + RULES[id].maxPoints, 0);
   const abnormalCount = evaluations.filter((e) => e.status !== 'normal').length;
   const peakSeverity = evaluations.reduce(
     (peak, evaluation) => Math.max(peak, STATUS_WEIGHT[evaluation.status]),
     0,
   );
-  return { evaluations, earlyWarningScore, abnormalCount, peakSeverity };
+  return { evaluations, earlyWarningScore, earlyWarningMax, abnormalCount, peakSeverity };
 }

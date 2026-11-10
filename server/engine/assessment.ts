@@ -11,18 +11,30 @@ import {
   durationInHours,
   durationToCourse,
 } from '../data/course.js';
-import { DISEASES, KNOWLEDGE_BASE_SIZE } from '../data/knowledge-base.js';
+import {
+  CLINICAL_LIMITATIONS,
+  CLINICAL_GOVERNANCE_NOTICE_AR,
+  MIN_ADULT_AGE,
+} from '../data/governance.js';
+import {
+  DISEASES,
+  KNOWLEDGE_BASE_GOVERNANCE,
+  KNOWLEDGE_BASE_SIZE,
+} from '../data/knowledge-base.js';
 import type { Disease, VitalCriterion } from './types.js';
 import { assessTriage } from './triage.js';
 import { analyseVitals } from './vitals.js';
 
-export const ENGINE_VERSION = '1.0.0';
+export const ENGINE_VERSION = '1.1.0';
 
 export const DISCLAIMER_AR =
   'هذه الأداة تعليمية لدعم القرار السريري فقط، ولا تُعدّ تشخيصاً نهائياً ولا بديلاً عن التقييم السريري المباشر والفحص البدني والاستشارة الطبية المتخصصة. النتائج احتمالية ومبنية على قاعدة معرفة مبسطة، ويجب التحقق منها دائماً وفق المعايير السريرية المعتمدة وحالة المريض الفردية.';
 
 export const DISCLAIMER_EN =
   'This tool is for educational clinical decision support only. It is not a diagnosis and does not replace direct clinical assessment, physical examination, or specialist consultation. Outputs are probabilistic, based on a simplified knowledge base, and must always be verified against validated guidelines and the individual patient.';
+
+/** Kept separate so the UI can show the governance notice without duplicating it. */
+export const GOVERNANCE_NOTICE_AR = CLINICAL_GOVERNANCE_NOTICE_AR;
 
 const SYMPTOM_LABEL = new Map(SYMPTOMS.map((s) => [s.id, s.labelAr]));
 const SPECIALTY_LABEL = new Map(SPECIALTIES.map((s) => [s.id, s]));
@@ -184,6 +196,13 @@ export function runAssessment(input: AssessmentInput): AssessmentResult {
     .slice(0, MAX_DIFFERENTIALS)
     .map(toDifferential);
 
+  const limitations = [...CLINICAL_LIMITATIONS];
+  if (input.age < MIN_ADULT_AGE) {
+    limitations.unshift(
+      `عمر المريض (${input.age}) أقل من ${MIN_ADULT_AGE} سنة: قواعد البالغين غير مُتحقَّق منها لهذه الفئة، ولا يوجد مسار أطفال في هذه النسخة.`,
+    );
+  }
+
   return {
     triage,
     vitals: vitalsAnalysis.evaluations,
@@ -195,6 +214,8 @@ export function runAssessment(input: AssessmentInput): AssessmentResult {
       lowInformation: input.symptoms.length < 2,
       disclaimerAr: DISCLAIMER_AR,
       disclaimerEn: DISCLAIMER_EN,
+      governance: KNOWLEDGE_BASE_GOVERNANCE,
+      limitations,
     },
   };
 }

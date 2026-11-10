@@ -8,7 +8,10 @@ const LEVEL_RANK: Record<TriageLevel, number> = {
   emergency: 3,
 };
 
-const LABELS: Record<TriageLevel, Omit<TriageAssessment, 'level' | 'reasons' | 'earlyWarningScore'>> = {
+const LABELS: Record<
+  TriageLevel,
+  Omit<TriageAssessment, 'level' | 'reasons' | 'earlyWarningScore' | 'earlyWarningMax'>
+> = {
   emergency: {
     labelAr: 'حالة طارئة — تدخل فوري',
     descriptionAr: 'توجد علامات تهدد الحياة. يجب تفعيل فريق الطوارئ والتقييم والتدخل دون تأخير.',
@@ -103,5 +106,6 @@ export function assessTriage(input: AssessmentInput, vitals: VitalsAnalysis): Tr
     ...base,
     reasons: reasons.slice(0, 8),
     earlyWarningScore: vitals.earlyWarningScore,
+    earlyWarningMax: vitals.earlyWarningMax,
   };
 }

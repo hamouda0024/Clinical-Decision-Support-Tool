@@ -1,5 +1,6 @@
 import type { CatalogResponse } from '../../shared/types.js';
 import { DURATION_UNITS, LIMITS, SPECIALTIES, SYMPTOMS, SYMPTOM_GROUPS, VITALS } from './catalog.js';
+import { KNOWLEDGE_BASE_GOVERNANCE } from './knowledge-base.js';
 
 /**
  * Single source of truth for the catalogue payload served by `GET /api/catalog`
@@ -13,5 +14,6 @@ export function buildCatalog(): CatalogResponse {
     vitals: VITALS,
     durationUnits: DURATION_UNITS,
     limits: { minAge: LIMITS.minAge, maxAge: LIMITS.maxAge, maxSymptoms: LIMITS.maxSymptoms },
+    governance: KNOWLEDGE_BASE_GOVERNANCE,
   };
 }

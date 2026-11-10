@@ -96,6 +96,7 @@ export interface CatalogResponse {
   vitals: VitalDefinition[];
   durationUnits: { id: DurationUnit; labelAr: string }[];
   limits: { minAge: number; maxAge: number; maxSymptoms: number };
+  governance: GovernanceSummary;
 }
 
 export type TriageLevel = 'emergency' | 'urgent' | 'semi_urgent' | 'routine';
@@ -106,8 +107,39 @@ export interface TriageAssessment {
   descriptionAr: string;
   /** Human-readable reasons behind the triage level. */
   reasons: string[];
-  /** Simplified early-warning score (0–7 per NEWS2-style aggregation, max 15 here). */
+  /**
+   * Simplified early-warning score computed from the five vitals collected here.
+   * It is NOT NEWS2 (no respiratory rate, consciousness or oxygen scale), so the
+   * score must never be labelled or used as a validated NEWS2 result.
+   */
   earlyWarningScore: number;
+  /** Highest possible value of the simplified score with the current rule set. */
+  earlyWarningMax: number;
+}
+
+/** Review state of clinical content; every entry starts as `unreviewed`. */
+export type ReviewStatus = 'unreviewed' | 'in_review' | 'approved';
+
+export interface ClinicalReference {
+  title: string;
+  organization: string;
+  year?: number;
+  url?: string;
+  section?: string;
+  /** Free-text evidence grading as published by the source, never inferred. */
+  evidenceLevel?: string;
+}
+
+/** Aggregated governance metadata for the bundled knowledge base. */
+export interface GovernanceSummary {
+  schemaVersion: string;
+  contentStatus: ReviewStatus;
+  totalEntries: number;
+  reviewedEntries: number;
+  reviewer: string | null;
+  lastReviewedAt: string | null;
+  /** True until every entry has physician sign-off. */
+  clinicalReviewRequired: boolean;
 }
 
 export type VitalStatus = 'critical_low' | 'low' | 'normal' | 'high' | 'critical_high';
@@ -162,6 +194,9 @@ export interface AssessmentResult {
     lowInformation: boolean;
     disclaimerAr: string;
     disclaimerEn: string;
+    governance: GovernanceSummary;
+    /** Explicit, human-readable limits of this assessment. */
+    limitations: string[];
   };
 }
 

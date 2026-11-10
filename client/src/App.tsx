@@ -82,6 +82,11 @@ export default function App() {
               دعم القرار السريري
             </span>
             <span className="text-[11px] text-slate-500">مخصص للأطباء والممارسين الصحيين</span>
+            {catalog?.governance.clinicalReviewRequired && (
+              <span className="badge bg-amber-50 text-amber-800 ring-1 ring-amber-200">
+                محتوى غير مُراجع سريرياً
+              </span>
+            )}
           </div>
 
           <h1 className="mt-3 text-2xl font-bold tracking-tight text-brand-950 sm:text-[28px]">

@@ -94,6 +94,21 @@ export function ResultsPanel({ result, loading, error, onDismissError }: Props) 
         <>
           <TriageBanner triage={result.triage} />
 
+          {result.meta.governance.clinicalReviewRequired && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[11.5px] leading-relaxed text-amber-900">
+              <p className="flex items-center gap-1.5 font-bold">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                محتوى سريري غير مُعتمد بعد
+              </p>
+              <p className="mt-1">
+                لم تُوقَّع المراجعة الطبية على قاعدة المعرفة: راجع الطبيب{' '}
+                {result.meta.governance.reviewedEntries} من أصل{' '}
+                {result.meta.governance.totalEntries} حالة. تُعرض النتائج للاستخدام التعليمي
+                والمراجعة فقط، ولا تُعتمد للتشخيص أو القرار العلاجي.
+              </p>
+            </div>
+          )}
+
           {result.meta.lowInformation && (
             <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[11.5px] leading-relaxed text-amber-900">
               <InfoCircle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -143,6 +158,26 @@ export function ResultsPanel({ result, loading, error, onDismissError }: Props) 
                 المعتمدة.
               </p>
             </div>
+
+            <details className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2">
+              <summary className="cursor-pointer text-[11px] font-semibold text-slate-600">
+                حدود هذه النسخة ({result.meta.limitations.length})
+              </summary>
+              <ul className="mt-2 space-y-1.5">
+                {result.meta.limitations.map((limitation) => (
+                  <li
+                    key={limitation}
+                    className="flex items-start gap-1.5 text-[10.5px] leading-relaxed text-slate-500"
+                  >
+                    <span
+                      className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-slate-400"
+                      aria-hidden
+                    />
+                    <span>{limitation}</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
             <p className="border-t border-slate-100 pt-2 text-[10px] text-slate-400">
               محرك التحليل v{result.meta.engineVersion} · قاعدة المعرفة: {result.meta.knowledgeBaseEntries}{' '}
               حالة · وقت التوليد: {formatDateTime(result.meta.generatedAt)}
