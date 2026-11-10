@@ -85,21 +85,24 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
         with:
-          name: github-pages
-          path: _artifact
+          node-version: 22
+          cache: npm
 
-      - name: Extract site
-        run: mkdir -p _site && tar -xzf _artifact/artifact.tar -C _site
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static site
+        run: npm run build:pages
 
       - name: Copy build to served root
         run: |
           rm -rf assets
-          cp -R _site/assets ./assets
-          cp _site/index.html ./index.html
-          if [ -f _site/favicon.svg ]; then cp _site/favicon.svg ./favicon.svg; fi
+          cp -R dist/pages/assets ./assets
+          cp dist/pages/index.html ./index.html
+          if [ -f dist/pages/favicon.svg ]; then cp dist/pages/favicon.svg ./favicon.svg; fi
           touch .nojekyll
 
       - name: Commit and push when changed
