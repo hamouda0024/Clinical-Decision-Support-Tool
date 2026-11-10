@@ -4,9 +4,9 @@ import compression from 'compression';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
-import type { ApiError, CatalogResponse } from '../shared/types.js';
+import type { ApiError } from '../shared/types.js';
 import { config } from './config.js';
-import { DURATION_UNITS, LIMITS, SPECIALTIES, SYMPTOMS, SYMPTOM_GROUPS, VITALS } from './data/catalog.js';
+import { buildCatalog } from './data/catalog-response.js';
 import { KNOWLEDGE_BASE_SIZE } from './data/knowledge-base.js';
 import { ENGINE_VERSION, runAssessment } from './engine/assessment.js';
 import { assessmentSchema, formatIssues } from './validation.js';
@@ -103,15 +103,7 @@ export function createApp(): express.Express {
   });
 
   app.get('/api/catalog', (_req, res) => {
-    const payload: CatalogResponse = {
-      symptoms: SYMPTOMS,
-      symptomGroups: SYMPTOM_GROUPS,
-      specialties: SPECIALTIES,
-      vitals: VITALS,
-      durationUnits: DURATION_UNITS,
-      limits: { minAge: LIMITS.minAge, maxAge: LIMITS.maxAge, maxSymptoms: LIMITS.maxSymptoms },
-    };
-    res.status(200).json(payload);
+    res.status(200).json(buildCatalog());
   });
 
   app.post('/api/assess', (req, res) => {

@@ -12,6 +12,7 @@ export class ApiRequestError extends Error {
 
 const TIMEOUT_MS = 20_000;
 
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -49,11 +50,26 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 }
 
-export function fetchCatalog(): Promise<CatalogResponse> {
+/**
+ * The GitHub Pages build is fully static: the same engine is bundled and runs
+ * locally instead of calling the Express API. The module is imported lazily so
+ * server-backed builds never download it.
+ */
+const STATIC_MODE = __STATIC_MODE__;
+
+export async function fetchCatalog(): Promise<CatalogResponse> {
+  if (STATIC_MODE) {
+    const { localCatalog } = await import('./static-engine');
+    return localCatalog();
+  }
   return request<CatalogResponse>('/api/catalog');
 }
 
-export function requestAssessment(input: AssessmentInput): Promise<AssessmentResult> {
+export async function requestAssessment(input: AssessmentInput): Promise<AssessmentResult> {
+  if (STATIC_MODE) {
+    const { localAssessment } = await import('./static-engine');
+    return localAssessment(input);
+  }
   return request<AssessmentResult>('/api/assess', {
     method: 'POST',
     body: JSON.stringify(input),

@@ -120,6 +120,7 @@ npm run dev:server
 | `npm run typecheck` | فحص أنواع الخادم والواجهة |
 | `npm test` | تشغيل كل الاختبارات (Vitest) |
 | `npm run build` | بناء الخادم (`dist-server`) والواجهة (`dist/client`) |
+| `npm run build:pages` | بناء نسخة ثابتة لـ GitHub Pages في `dist/pages` |
 | `npm start` | تشغيل نسخة الإنتاج (يقدّم الواجهة والـ API معاً) |
 
 ## واجهة API
@@ -234,6 +235,26 @@ NODE_ENV=production PORT=4000 npm start
 النشر خلف وكيل عكسي موثوق فعّل `TRUST_PROXY=true` واضبط `ALLOWED_ORIGINS` على
 النطاقات الفعلية، واستخدم HTTPS. الأداة لا تتضمن مصادقة، لذا يجب حمايتها على
 مستوى الشبكة قبل أي استخدام مؤسسي.
+
+### GitHub Pages (نسخة تجريبية ثابتة)
+
+ينشر سير العمل [`.github/workflows/pages.yml`](.github/workflows/pages.yml) الموقع
+تلقائياً عند كل دفع إلى `main`:
+
+1. من صفحة المستودع: **Settings → Pages → Build and deployment → Source** واختر
+   **GitHub Actions**.
+2. ادفع إلى `main` أو شغّل السير عمل يدوياً؛ يُنشر الموقع على
+   `https://hamouda0024.github.io/Clinical-Decision-Support-Tool/`.
+
+نسخة Pages لا تحتوي خادماً: تُضمَّن قاعدة المعرفة ومحرك القرار نفسه داخل الحزمة
+وتُشغَّل في المتصفح، فلا تُرسل أي بيانات ولا تحتاج مسارات `/api`. للبناء محلياً:
+
+```bash
+npm run build:pages   # الناتج في dist/pages، بمسار أساس /Clinical-Decision-Support-Tool/
+```
+
+المسار الأساسي مضبوط في `vite.config.ts` عبر `PAGES_BASE`؛ يجب تحديثه إذا أُعيد
+تسمية المستودع. أما النسخة الكاملة (API + الواجهة) فتُنشر بـ `npm run build && npm start`.
 
 ## الملكية والحقوق
 
