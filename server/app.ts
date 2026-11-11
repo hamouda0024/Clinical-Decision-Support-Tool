@@ -9,6 +9,7 @@ import { config } from './config.js';
 import { buildCatalog } from './data/catalog-response.js';
 import { KNOWLEDGE_BASE_GOVERNANCE, KNOWLEDGE_BASE_SIZE } from './data/knowledge-base.js';
 import { ENGINE_VERSION, runAssessment } from './engine/assessment.js';
+import { FUTURE_CONTENT_REGISTRY, FUTURE_FEATURE_FLAGS } from './governance/future-schemas.js';
 import { assessmentSchema, formatIssues } from './validation.js';
 
 /** Requests from another origin are rejected: the API is same-origin only. */
@@ -107,6 +108,27 @@ export function createApp(): express.Express {
 
   app.get('/api/catalog', (_req, res) => {
     res.status(200).json(buildCatalog());
+  });
+
+  // Future capability contract. It exposes no clinical content and every flag
+  // stays false until the physician supplies and signs off the corresponding
+  // module. Clients must not treat this as an enabled feature list yet.
+  app.get('/api/capabilities', (_req, res) => {
+    res.status(200).json({
+      status: FUTURE_CONTENT_REGISTRY.status,
+      schemaVersion: FUTURE_CONTENT_REGISTRY.schemaVersion,
+      features: FUTURE_FEATURE_FLAGS,
+      modules: {
+        actionPlans: FUTURE_CONTENT_REGISTRY.actionPlans.length,
+        pathways: FUTURE_CONTENT_REGISTRY.pathways.length,
+        references: FUTURE_CONTENT_REGISTRY.references.length,
+        labInterpretations: FUTURE_CONTENT_REGISTRY.labInterpretations.length,
+        medications: FUTURE_CONTENT_REGISTRY.medications.length,
+        populationPathways: FUTURE_CONTENT_REGISTRY.populationPathways.length,
+        exportProfiles: FUTURE_CONTENT_REGISTRY.exportProfiles.length,
+        offline: FUTURE_CONTENT_REGISTRY.offline.enabled,
+      },
+    });
   });
 
   app.post('/api/assess', (req, res) => {

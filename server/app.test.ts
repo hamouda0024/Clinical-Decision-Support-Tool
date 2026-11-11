@@ -32,6 +32,21 @@ describe('API', () => {
     expect(body.knowledgeBaseEntries).toBeGreaterThan(0);
   });
 
+  it('exposes future modules as prepared and disabled, without clinical content', async () => {
+    const response = await fetch(`${baseUrl}/api/capabilities`);
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as {
+      status: string;
+      features: Record<string, boolean>;
+      modules: Record<string, number | boolean>;
+    };
+    expect(body.status).toBe('pending_medical_content');
+    expect(Object.values(body.features).every((enabled) => enabled === false)).toBe(true);
+    const { offline, ...counts } = body.modules;
+    expect(offline).toBe(false);
+    expect(Object.values(counts).every((count) => count === 0)).toBe(true);
+  });
+
   it('serves the symptom catalogue', async () => {
     const response = await fetch(`${baseUrl}/api/catalog`);
     expect(response.status).toBe(200);
