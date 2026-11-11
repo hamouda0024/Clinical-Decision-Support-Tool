@@ -44,3 +44,8 @@ Thumbs.db
 
 # Local screenshots and chat artifacts
 artifacts/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/

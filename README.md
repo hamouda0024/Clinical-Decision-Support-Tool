@@ -6,8 +6,9 @@
 الفورية، والأدوية المقترحة والتحذيرات والموانع، إضافة إلى مستوى فرز الحالة
 وطبقة إنذار مبكر مبسّطة.
 
-واجهة عربية بالكامل (RTL) بتصميم طبي هادئ، ومنطق تحليل منفصل على الخادم، وقاعدة
-معرفة سريرية تعليمية مكتوبة بأنواع TypeScript صارمة.
+واجهة متعددة اللغات (العربية RTL، الفرنسية والإنجليزية LTR) بتصميم طبي هادئ،
+ومنطق تحليل منفصل على الخادم، وقاعدة معرفة سريرية تعليمية مكتوبة بأنواع TypeScript
+صارمة.
 
 > ## ⚠️ إخلاء مسؤولية طبي
 > هذه الأداة **تعليمية لدعم القرار فقط**، ولا تُعدّ تشخيصاً نهائياً ولا بديلاً عن
@@ -36,9 +37,9 @@
   النبض، الحرارة، وتشبّع الأكسجين.
 - **تشخيصات تفاضلية مرتّبة** حسب درجة احتمال نسبية، مع شرح لكل نتيجة: الأدلة
   الداعمة، العلامات المميزة الناقصة، والأدلة التي لا تدعم التشخيص.
-- **إجراءات موصى بها لكل تشخيص:** فحوصات مخبرية، تصوير، تدخلات فورية، أدوية
-  مقترحة، وتحذيرات وموانع استخدام.
-- **فرز ثلاثي المستوى** (طارئ/عاجل/شبه عاجل/روتيني) مبني على العلامات الحيوية
+- **إجراءات لكل تشخيص:** فحوصات مخبرية، تصوير، تدخلات فورية، وتحذيرات وموانع
+  استخدام. أسماء الأدوية والجرعات محجوبة حتى اعتماد المراجعة الطبية.
+- **فرز رباعي المستويات** (طارئ/عاجل/شبه عاجل/روتيني) مبني على العلامات الحيوية
   والأعلام الحمراء، مع أسباب القرار ودرجة إنذار مبكر مبسّطة.
 - **تحقق مزدوج** (واجهة + خادم) برسائل خطأ عربية دقيقة.
 - **لا يخزّن بيانات المرضى:** الحساب في الذاكرة، وواجهة API بلا كوكيز ومع
@@ -46,6 +47,14 @@
 - **حوكمة محتوى صريحة:** كل حالة تحمل حالة مراجعة ومصادر اختيارية؛ لا يمكن لحالة أن
   تُعلن «معتمدة» دون اسم المراجع والتاريخ والمصدر. القاعدة الحالية **غير مُراجعة**
   ويُعرض ذلك قبل النتائج وبعدها، مع قائمة حدود النسخة.
+- **ثلاث لغات:** مبدّل لغة في الرأس، RTL/LTR تلقائي، وترجمة نصوص الواجهة العامة
+  والتحقق والأخطاء. **لا يُترجم المحتوى الطبي**: أسماء الحالات والأعراض والتخصصات
+  والتوصيات والفحوصات والإجراءات والتحذيرات تبقى بالعربية مع إشعار صريح، حتى تعتمد
+  الطبيبة ترجمة مُراجعة. معرّفات الحالات لا تتغير.
+- **بوابة سلامة للأطفال:** عمر أقل من 16 لا يحصل على توصيات البالغين؛ تظهر رسالة
+  واضحة ولا تُعرض تفاضليات أو إجراءات.
+- **حجب المحتوى الدوائي غير المُ راجَع:** أسماء الأدوية والجرعات تُزال من استجابة
+  الـ API والواجهة ما دامت القاعدة غير معتمدة؛ تظهر رسالة «المحتوى الدوائي محجوب».
 - **أمثلة سريعة** لتجربة الأداة فوراً دون إدخال يدوي.
 - **تصميم متجاوب** ولوحة نتائج لاصقة على الشاشات الكبيرة، مع دعم RTL كامل.
 
@@ -58,7 +67,8 @@
 | التحقق | Zod |
 | الأمان | Helmet + CSP + express-rate-limit + تحقق من الأصل (same-origin) |
 | الحوكمة | حالة مراجعة ومصادر لكل حالة + إصدار مخطط `2.0.0` + حدود معلنة |
-| الاختبارات | Vitest (محرك القرار، التحقق، وAPI عبر HTTP) |
+| اللغات | i18n مخصص (AR/FR/EN) + `LanguageProvider` + RTL/LTR + محتوى طبي عربي فقط |
+| الاختبارات | Vitest (المحرك، التحقق، الـ API) + jsdom/Testing Library (i18n وبوابات السلامة) |
 
 ## بنية المشروع
 
@@ -72,7 +82,8 @@
 │       ├── main.tsx
 │       ├── index.css           # Tailwind + نظام التصميم الطبي
 │       ├── components/         # Header, Disclaimer, Form, Results, ...
-│       └── lib/                # api.ts, form.ts, format.ts, presets.ts
+│       ├── i18n/               # LanguageProvider، القواميس AR/FR/EN، سياسة المحتوى الطبي
+│       └── lib/                # api.ts, errors.ts, form.ts, format.ts, presets.ts
 ├── server/
 │   ├── index.ts                # نقطة التشغيل والإغلاق الآمن
 │   ├── app.ts                  # Express، الأمان، المسارات، الملفات الثابتة
@@ -123,7 +134,8 @@ npm run dev:server
 | `npm run dev:server` | تشغيل API فقط على المنفذ 4000 |
 | `npm run dev:client` | تشغيل Vite فقط على المنفذ 3000 |
 | `npm run typecheck` | فحص أنواع الخادم والواجهة |
-| `npm test` | تشغيل كل الاختبارات (Vitest) |
+| `npm test` | تشغيل كل اختبارات Vitest |
+| `npm run test:e2e` | اختبار Playwright E2E (يتطلب تثبيت Chromium مرة واحدة) |
 | `npm run build` | بناء الخادم (`dist-server`) والواجهة (`dist/client`) |
 | `npm run build:pages` | بناء نسخة ثابتة لـ GitHub Pages في `dist/pages` |
 | `npm start` | تشغيل نسخة الإنتاج (يقدّم الواجهة والـ API معاً) |
@@ -135,7 +147,7 @@ npm run dev:server
 ```json
 {
   "status": "ok",
-  "engineVersion": "1.1.0",
+  "engineVersion": "1.2.0",
   "knowledgeBaseEntries": 24,
   "knowledgeBaseSchemaVersion": "2.0.0",
   "contentStatus": "unreviewed",
@@ -147,6 +159,11 @@ npm run dev:server
 
 يعيد الأعراض (مع مجموعاتها)، التخصصات، تعريفات العلامات الحيوية ووحدات المدة
 والحدود المسموحة، لتُبنى الواجهة ديناميكياً من مصدر واحد.
+
+### `GET /api/capabilities`
+
+يعيد حالة الوحدات المستقبلية (كلها `pending_medical_content`)، وأعدادها (صفر)،
+وأعلام الميزات المعطلة. لا يعيد أي محتوى طبي، ولا يعني أن الميزة مفعّلة.
 
 ### `POST /api/assess`
 
@@ -187,10 +204,10 @@ npm run dev:server
       "matchedEvidence": ["ألم في الصدر", "تعرق بارد", "ضيق في التنفس", "تسرّع القلب", "مدة الأعراض متوافقة مع المسار السريري"],
       "missingKeyFindings": [],
       "discouragingFindings": [],
-      "actions": { "labs": ["…"], "imaging": ["…"], "immediate": ["…"], "medications": ["…"], "alerts": ["…"] }
+      "actions": { "labs": ["…"], "imaging": ["…"], "immediate": ["…"], "medications": [], "alerts": ["…"] }
     }
   ],
-  "meta": { "engineVersion": "1.0.0", "lowInformation": false }
+  "meta": { "engineVersion": "1.2.0", "lowInformation": false, "pediatricUnsupported": false, "medicationContentHidden": true }
 }
 ```
 
@@ -207,7 +224,8 @@ npm run dev:server
 من خمس علامات فقط (حدّها الأقصى 11) وتُعرض دائماً كـ«EWS مبسّط — ليست NEWS2».
 
 كل نتيجة تحمل `meta.governance` (حالة المراجعة والمصادر) و`meta.limitations`
-(الحدود الصريحة، ومنها تنبيه عند عمر أقل من 16).
+(الحدود الصريحة)، و`meta.pediatricUnsupported` (عمر < 16: لا توصيات بالغين)،
+و`meta.medicationContentHidden` (المحتوى الدوائي محجوب ما دامت القاعدة غير مُراجعة).
 
 التفاصيل الكاملة (الأوزان، عتبات الفرز، حدود الأداة، وحوكمة قاعدة المعرفة) في
 [docs/CLINICAL_LOGIC.md](docs/CLINICAL_LOGIC.md)، وتدقيق الفجوات وخارطة الطريق في
@@ -231,7 +249,7 @@ npm run dev:server
 npm test
 ```
 
-تغطي الاختبارات (31 اختباراً):
+تغطي الاختبارات (84 اختباراً):
 
 - **محرك القرار:** ترتيب التشخيصات، رفع مستوى الفرز عند نقص الأكسجة، سقف درجة
   الاحتمال، الأدلة السلبية، توافق مدة الأعراض، والشفافية (الأدلة/العلامات الناقصة).
@@ -240,7 +258,28 @@ npm test
 - **الـ API:** الصحة، الكتالوج، رفض الطلبات عبر الأصول، التحقق، الاستجابة
   الكاملة، الرؤوس الأمنية، و404 المنظّم.
 - **الحوكمة والحدود:** اشتقاق حالة القاعدة، منع اعتماد حالة بلا مراجع/تاريخ/مصدر،
-  نشر الحوكمة في الكتالوج، تنبيه العمر دون 16، وحد EWS الأقصى الحقيقي (11).
+  نشر الحوكمة في الكتالوج، حجب توصيات البالغين عن الأطفال، حجب محتوى الأدوية،
+  وحد EWS الأقصى الحقيقي (11).
+- **i18n:** تطابق مفاتيح القواميس الثلاثة، تعويض المتغيرات، تنسيق التواريخ،
+  اكتشاف لغة المتصفح، تبديل اللغة فعلياً، وتبديل RTL/LTR على مستوى المستند.
+- **سياسة المحتوى الطبي:** بقاء أسماء الأعراض والحالات بالعربية في كل لغة واجهة،
+  وثبات المعرّفات الـ24 والـ58.
+- **البنية المستقبلية:** مخططات P1–P4 والمسارات والمراجع والتحاليل والأدوية والفئات
+  السكانية والتصدير/offline، مع رفض المحتوى المعتمد بلا توقيع ومرجع.
+- **الشمول:** الوصول إلى كل الحالات الـ24 بمعطياتها الموثقة.
+- **حالات الانحدار:** 28 حالة اصطناعية تغطي الطوارئ والعاجل والروتيني، العلامات
+  الإنذارية، القيم الشاذة، الطفل، والمعلومات القليلة (`server/engine/manual-cases.test.ts`).
+
+اختبار E2E منفصل عبر Playwright:
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+يفتح الواجهة، يختار مثال «ألم صدري»، يضغط «تحليل الحالة»، ويتحقق من ظهور النتائج
+وحجب المحتوى الدوائي. لا يُشغّل تلقائياً ضمن `npm test`.
+
+التدقيق التفصيلي في [FEATURES_CHECKLIST](docs/FEATURES_CHECKLIST.md)، المصادر المقترحة
+في [MEDICAL_SOURCES](docs/MEDICAL_SOURCES.md)، والحالات في [TEST_CASES](docs/TEST_CASES.md).
 
 ## النشر
 
@@ -293,8 +332,10 @@ npm run build:pages   # الناتج في dist/pages، بمسار أساس /Clin
 
 ---
 
-<sub>Balanced summary (English): A full-stack, Arabic-first clinical decision support
-demo for physicians. React + TypeScript SPA, Express + Zod API, 24-entry
-educational knowledge base, explainable differential scoring, rule-based triage,
-hardened HTTP layer, and automated tests. Educational use only — not a diagnosis,
+<sub>Balanced summary (English): A full-stack multilingual clinical decision support
+demo for physicians (Arabic RTL, French and English LTR). React + TypeScript SPA,
+Express + Zod API, 24-entry educational knowledge base, explainable differential
+scoring, rule-based triage, content-governance metadata, paediatric and medication
+safety gates, inactive future-content schemas, hardened HTTP layer, and 84
+automated tests. Medical content remains Arabic-only pending physician review. Educational use only — not a diagnosis,
 not a substitute for clinical assessment, and never for storing patient data.</sub>
