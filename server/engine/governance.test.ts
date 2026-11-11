@@ -83,12 +83,25 @@ describe('assessment limitations and score labelling', () => {
     );
   });
 
-  it('warns explicitly when an adult-only tool is used below the supported age', () => {
+  it('withholds adult differentials and actions below the supported age', () => {
     const child = runAssessment(makeInput({ age: MIN_ADULT_AGE - 1 }));
     expect(child.meta.limitations[0]).toContain(`${MIN_ADULT_AGE}`);
+    expect(child.meta.pediatricUnsupported).toBe(true);
+    expect(child.differentials).toEqual([]);
 
     const adult = runAssessment(makeInput({ age: MIN_ADULT_AGE }));
+    expect(adult.meta.pediatricUnsupported).toBe(false);
+    expect(adult.differentials.length).toBeGreaterThan(0);
     expect(adult.meta.limitations.join(' ')).not.toContain('أقل من');
+  });
+
+  it('removes unreviewed medication names and dosages from the API result', () => {
+    const result = runAssessment(makeInput());
+    expect(result.meta.medicationContentHidden).toBe(true);
+    expect(result.differentials.length).toBeGreaterThan(0);
+    for (const diagnosis of result.differentials) {
+      expect(diagnosis.actions.medications).toEqual([]);
+    }
   });
 
   it('publishes the true maximum of the simplified early-warning score', () => {

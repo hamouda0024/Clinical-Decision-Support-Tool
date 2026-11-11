@@ -25,7 +25,7 @@ import type { Disease, VitalCriterion } from './types.js';
 import { assessTriage } from './triage.js';
 import { analyseVitals } from './vitals.js';
 
-export const ENGINE_VERSION = '1.1.0';
+export const ENGINE_VERSION = '1.2.0';
 
 export const DISCLAIMER_AR =
   'هذه الأداة تعليمية لدعم القرار السريري فقط، ولا تُعدّ تشخيصاً نهائياً ولا بديلاً عن التقييم السريري المباشر والفحص البدني والاستشارة الطبية المتخصصة. النتائج احتمالية ومبنية على قاعدة معرفة مبسطة، ويجب التحقق منها دائماً وفق المعايير السريرية المعتمدة وحالة المريض الفردية.';
@@ -161,7 +161,7 @@ function scoreDisease(disease: Disease, input: AssessmentInput): Scored | null {
   return { disease, confidence, matchedEvidence, missingKeyFindings, discouragingFindings };
 }
 
-function toDifferential(scored: Scored): DifferentialDiagnosis {
+function toDifferential(scored: Scored, medicationContentHidden: boolean): DifferentialDiagnosis {
   const specialtyId = scored.disease.specialties[0] ?? 'internal';
   const specialty = SPECIALTY_LABEL.get(specialtyId) ?? {
     id: specialtyId,
@@ -179,13 +179,43 @@ function toDifferential(scored: Scored): DifferentialDiagnosis {
     missingKeyFindings: scored.missingKeyFindings,
     discouragingFindings: scored.discouragingFindings,
     redFlags: scored.disease.redFlags,
-    actions: scored.disease.actions,
+    // Never expose unreviewed drug names or dosages, including through the API.
+    actions: medicationContentHidden
+      ? { ...scored.disease.actions, medications: [] }
+      : scored.disease.actions,
   };
 }
 
 export function runAssessment(input: AssessmentInput): AssessmentResult {
   const vitalsAnalysis = analyseVitals(input.vitals);
   const triage = assessTriage(input, vitalsAnalysis);
+  const medicationContentHidden = KNOWLEDGE_BASE_GOVERNANCE.clinicalReviewRequired;
+
+  // Paediatric safety gate: no reviewed paediatric knowledge base exists, so the
+  // adult differentials and actions must not be returned for a child. Scoring
+  // rules are untouched; only the adult output is withheld.
+  if (input.age < MIN_ADULT_AGE) {
+    return {
+      triage,
+      vitals: vitalsAnalysis.evaluations,
+      differentials: [],
+      meta: {
+        engineVersion: ENGINE_VERSION,
+        generatedAt: new Date().toISOString(),
+        knowledgeBaseEntries: KNOWLEDGE_BASE_SIZE,
+        lowInformation: true,
+        disclaimerAr: DISCLAIMER_AR,
+        disclaimerEn: DISCLAIMER_EN,
+        governance: KNOWLEDGE_BASE_GOVERNANCE,
+        pediatricUnsupported: true,
+        medicationContentHidden,
+        limitations: [
+          `عمر المريض (${input.age}) أقل من ${MIN_ADULT_AGE} سنة: لا يوجد مسار أطفال مُراجَع في هذه النسخة، لذلك لا تُعرض تشخيصات أو إجراءات أو جرعات خاصة بالبالغين.`,
+          ...CLINICAL_LIMITATIONS,
+        ],
+      },
+    };
+  }
 
   const scored = DISEASES.map((disease) => scoreDisease(disease, input))
     .filter((entry): entry is Scored => entry !== null)
@@ -194,14 +224,9 @@ export function runAssessment(input: AssessmentInput): AssessmentResult {
   const strong = scored.filter((entry) => entry.confidence >= MIN_CONFIDENCE);
   const selected = (strong.length > 0 ? strong : scored.slice(0, 3))
     .slice(0, MAX_DIFFERENTIALS)
-    .map(toDifferential);
+    .map((entry) => toDifferential(entry, medicationContentHidden));
 
   const limitations = [...CLINICAL_LIMITATIONS];
-  if (input.age < MIN_ADULT_AGE) {
-    limitations.unshift(
-      `عمر المريض (${input.age}) أقل من ${MIN_ADULT_AGE} سنة: قواعد البالغين غير مُتحقَّق منها لهذه الفئة، ولا يوجد مسار أطفال في هذه النسخة.`,
-    );
-  }
 
   return {
     triage,
@@ -215,6 +240,8 @@ export function runAssessment(input: AssessmentInput): AssessmentResult {
       disclaimerAr: DISCLAIMER_AR,
       disclaimerEn: DISCLAIMER_EN,
       governance: KNOWLEDGE_BASE_GOVERNANCE,
+      pediatricUnsupported: false,
+      medicationContentHidden,
       limitations,
     },
   };

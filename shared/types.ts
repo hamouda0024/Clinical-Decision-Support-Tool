@@ -195,6 +195,10 @@ export interface AssessmentResult {
     disclaimerAr: string;
     disclaimerEn: string;
     governance: GovernanceSummary;
+    /** True when the patient is below the supported adult age and no paediatric pathway exists. */
+    pediatricUnsupported: boolean;
+    /** True while unreviewed medication names/dosages are withheld from the result. */
+    medicationContentHidden: boolean;
     /** Explicit, human-readable limits of this assessment. */
     limitations: string[];
   };
