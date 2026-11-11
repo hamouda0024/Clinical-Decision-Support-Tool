@@ -1,11 +1,17 @@
 import type { AssessmentInput, AssessmentResult, ApiError, CatalogResponse } from '../../../shared/types';
 
 export class ApiRequestError extends Error {
+  readonly code: string;
   readonly issues: { path: string; messageAr: string }[];
 
-  constructor(message: string, issues: { path: string; messageAr: string }[] = []) {
+  constructor(
+    message: string,
+    code = 'request_failed',
+    issues: { path: string; messageAr: string }[] = [],
+  ) {
     super(message);
     this.name = 'ApiRequestError';
+    this.code = code;
     this.issues = issues;
   }
 }
@@ -33,7 +39,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     if (!response.ok) {
       const error = (payload as ApiError | null)?.error;
       throw new ApiRequestError(
-        error?.messageAr ?? 'تعذّر إتمام الطلب. الرجاء المحاولة مرة أخرى.',
+        error?.messageAr ?? 'Request failed',
+        error?.code ?? 'request_failed',
         error?.issues ?? [],
       );
     }
@@ -42,9 +49,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   } catch (error) {
     if (error instanceof ApiRequestError) throw error;
     if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new ApiRequestError('انتهت مهلة الاتصال بالخادم. تحقّق من الشبكة وحاول مجدداً.');
+      throw new ApiRequestError(
+        'Request timed out',
+        'timeout',
+      );
     }
-    throw new ApiRequestError('تعذّر الاتصال بالخادم. تأكّد من تشغيل الخدمة ثم أعد المحاولة.');
+    throw new ApiRequestError(
+      'Network error',
+      'network',
+    );
   } finally {
     clearTimeout(timeout);
   }

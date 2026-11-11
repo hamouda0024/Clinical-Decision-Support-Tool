@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import type { AssessmentInput, CatalogResponse, VitalId } from '../../../shared/types';
+import { durationUnitLabel, specialtyLabel, vitalLabel } from '../i18n/clinical';
+import { useI18n, type TranslationKey } from '../i18n';
 import { EMPTY_FORM, toAssessmentInput, validateForm, type FormErrors, type FormState } from '../lib/form';
 import { PRESETS } from '../lib/presets';
 import { Activity, HeartPulse, RotateCcw, Stethoscope, User } from './Icons';
@@ -14,12 +16,13 @@ interface Props {
 }
 
 const SEX_OPTIONS = [
-  { value: 'male', label: 'ذكر' },
-  { value: 'female', label: 'أنثى' },
-  { value: 'other', label: 'آخر' },
-] as const;
+  { value: 'male', key: 'form.sex.male' },
+  { value: 'female', key: 'form.sex.female' },
+  { value: 'other', key: 'form.sex.other' },
+] as const satisfies readonly { value: FormState['sex']; key: TranslationKey }[];
 
 export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Props) {
+  const { language, t } = useI18n();
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
   const [summaryError, setSummaryError] = useState<string | null>(null);
@@ -71,10 +74,13 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const validationErrors = validateForm(form, catalog.limits.maxSymptoms);
+    const vitalLabels = Object.fromEntries(
+      catalog.vitals.map((vital) => [vital.id, vitalLabel(vital, language)]),
+    ) as Record<VitalId, string>;
+    const validationErrors = validateForm(form, catalog.limits.maxSymptoms, t, vitalLabels);
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) {
-      setSummaryError('تعذّر تحليل الحالة: راجع الحقول المميّزة بالأحمر ثم أعد المحاولة.');
+      setSummaryError(t('form.errorsSummary'));
       return;
     }
     setSummaryError(null);
@@ -87,19 +93,19 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/60 px-5 py-3.5">
           <div className="flex items-center gap-2">
             <Stethoscope className="h-4 w-4 text-brand-700" />
-            <h2 className="text-[14px] font-bold text-slate-900">نموذج تقييم المريض</h2>
+            <h2 className="text-[14px] font-bold text-slate-900">{t('form.cardTitle')}</h2>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-slate-500">أمثلة سريعة:</span>
+            <span className="text-[11px] text-slate-500">{t('form.examples')}</span>
             {PRESETS.map((preset) => (
               <button
                 key={preset.id}
                 type="button"
                 onClick={() => applyPreset(preset.id)}
-                title={preset.hint}
+                title={t(preset.hintKey)}
                 className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-800"
               >
-                {preset.label}
+                {t(preset.labelKey)}
               </button>
             ))}
           </div>
@@ -116,19 +122,25 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
             </div>
           )}
 
+          {language !== 'ar' && (
+            <div className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2.5 text-[11px] leading-relaxed text-sky-900">
+              {t('contentPolicy.notice')}
+            </div>
+          )}
+
           {/* 1 — Patient profile */}
           <section aria-labelledby="section-patient">
             <div className="mb-3 flex items-center gap-2">
               <span className="section-kicker">1</span>
               <h3 id="section-patient" className="text-[13.5px] font-bold text-slate-800">
-                بيانات المريض
+                {t('form.section.patient')}
               </h3>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="age" className="label">
-                  العمر (بالأعوام)
+                  {t('form.age.label')}
                 </label>
                 <input
                   id="age"
@@ -143,7 +155,7 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
                     clearError('age');
                   }}
                   className={`input ${errors.age ? 'input-error' : ''}`}
-                  placeholder="مثال: 45"
+                  placeholder={t('form.age.placeholder')}
                   aria-invalid={Boolean(errors.age)}
                   aria-describedby={errors.age ? 'age-error' : undefined}
                   required
@@ -153,13 +165,13 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
                     {errors.age}
                   </p>
                 ) : (
-                  <p className="help">النطاق المدعوم: 0–120 سنة (البالغون أساس التقييم).</p>
+                  <p className="help">{t('form.age.help')}</p>
                 )}
               </div>
 
               <div>
                 <label htmlFor="specialty" className="label">
-                  الفئة الطبية / التخصص
+                  {t('form.specialty.label')}
                 </label>
                 <select
                   id="specialty"
@@ -173,10 +185,10 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
                   aria-invalid={Boolean(errors.specialty)}
                   required
                 >
-                  <option value="">— اختر التخصص —</option>
+                  <option value="">{t('form.specialty.placeholder')}</option>
                   {catalog.specialties.map((specialty) => (
                     <option key={specialty.id} value={specialty.id}>
-                      {specialty.labelAr}
+                      {specialtyLabel(specialty, language)}
                     </option>
                   ))}
                 </select>
@@ -185,7 +197,7 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
 
               <div>
                 <span className="label" id="sex-label">
-                  الجنس
+                  {t('form.sex.label')}
                 </span>
                 <div role="radiogroup" aria-labelledby="sex-label" className="grid grid-cols-3 gap-2">
                   {SEX_OPTIONS.map((option) => (
@@ -203,7 +215,7 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
                         required
                       />
                       <span className="flex cursor-pointer items-center justify-center rounded-xl border border-slate-300 bg-white py-2.5 text-[12.5px] font-medium text-slate-700 transition select-none hover:border-brand-300 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:font-semibold peer-checked:text-brand-800 peer-focus-visible:ring-4 peer-focus-visible:ring-brand-500/20">
-                        {option.label}
+                        {t(option.key)}
                       </span>
                     </label>
                   ))}
@@ -213,7 +225,7 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
 
               <div>
                 <label htmlFor="duration" className="label">
-                  مدة الأعراض
+                  {t('form.duration.label')}
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -230,12 +242,12 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
                       clearError('duration');
                     }}
                     className={`input flex-1 ${errors.duration ? 'input-error' : ''}`}
-                    placeholder="مثال: 3"
+                    placeholder={t('form.duration.placeholder')}
                     aria-invalid={Boolean(errors.duration)}
                     required
                   />
                   <select
-                    aria-label="وحدة مدة الأعراض"
+                    aria-label={t('form.duration.unitAria')}
                     value={form.durationUnit}
                     onChange={(event) =>
                       update('durationUnit', event.target.value as FormState['durationUnit'])
@@ -244,7 +256,7 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
                   >
                     {catalog.durationUnits.map((unit) => (
                       <option key={unit.id} value={unit.id}>
-                        {unit.labelAr}
+                        {durationUnitLabel(unit.id, language)}
                       </option>
                     ))}
                   </select>
@@ -261,7 +273,7 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
             <div className="mb-3 flex items-center gap-2">
               <span className="section-kicker">2</span>
               <h3 id="section-symptoms" className="text-[13.5px] font-bold text-slate-800">
-                الأعراض الرئيسية (Chief Complaints)
+                {t('form.section.symptoms')}
               </h3>
             </div>
             <SymptomPicker
@@ -273,10 +285,7 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
               max={catalog.limits.maxSymptoms}
               error={errors.symptoms}
             />
-            <p className="help mt-2">
-              النقطة الحمراء تعني عرضاً قد يرتبط بحالة تحتاج تقييماً عاجلاً. اختر كل ما ينطبق على
-              المريض.
-            </p>
+            <p className="help mt-2">{t('form.symptom.help')}</p>
           </section>
 
           <hr className="border-slate-100" />
@@ -286,7 +295,7 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
             <div className="mb-3 flex items-center gap-2">
               <span className="section-kicker">3</span>
               <h3 id="section-vitals" className="text-[13.5px] font-bold text-slate-800">
-                العلامات الحيوية
+                {t('form.section.vitals')}
               </h3>
               <HeartPulse className="ms-auto h-4 w-4 text-rose-500" aria-hidden />
             </div>
@@ -308,22 +317,22 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
                 className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
                 aria-hidden
               />
-              جارٍ التحليل…
+              {t('form.submitting')}
             </>
           ) : (
             <>
               <Activity className="h-4 w-4" />
-              تحليل الحالة
+              {t('form.submit')}
             </>
           )}
         </button>
         <button type="button" onClick={handleReset} className="btn-ghost" disabled={loading}>
           <RotateCcw className="h-4 w-4" />
-          تفريغ النموذج
+          {t('form.reset')}
         </button>
         <p className="text-[11px] leading-relaxed text-slate-500 sm:ms-auto sm:max-w-64">
           <User className="mb-0.5 me-1 inline h-3.5 w-3.5" aria-hidden />
-          لا تُدخل بيانات تعريفية (الاسم أو رقم الملف). الأداة لا تحتاجها ولا تحفظها.
+          {t('form.privacy')}
         </p>
       </div>
     </form>

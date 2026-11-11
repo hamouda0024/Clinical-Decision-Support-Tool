@@ -6,16 +6,19 @@ import { Footer } from './components/Footer';
 import { Header } from './components/Header';
 import { Activity, AlertTriangle, Check, ClipboardList, ShieldAlert } from './components/Icons';
 import { ResultsPanel } from './components/ResultsPanel';
+import { useI18n } from './i18n';
 import { ApiRequestError, fetchCatalog, requestAssessment } from './lib/api';
+import { apiErrorMessage } from './lib/errors';
 
 export default function App() {
+  const { language, t } = useI18n();
   const [catalog, setCatalog] = useState<CatalogResponse | null>(null);
-  const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [catalogError, setCatalogError] = useState<unknown | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
 
   const [result, setResult] = useState<AssessmentResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const loadCatalog = useCallback(async () => {
@@ -25,11 +28,7 @@ export default function App() {
       const data = await fetchCatalog();
       setCatalog(data);
     } catch (catalogRequestError) {
-      setCatalogError(
-        catalogRequestError instanceof ApiRequestError
-          ? catalogRequestError.message
-          : 'تعذّر تحميل قوائم الإدخال. تحقّق من الاتصال ثم أعد المحاولة.',
-      );
+      setCatalogError(catalogRequestError);
     } finally {
       setCatalogLoading(false);
     }
@@ -52,13 +51,7 @@ export default function App() {
         }
       });
     } catch (requestError) {
-      const issues =
-        requestError instanceof ApiRequestError && requestError.issues.length > 0
-          ? ` (${requestError.issues.map((issue) => issue.messageAr).join(' · ')})`
-          : '';
-      setError(
-        `${requestError instanceof ApiRequestError ? requestError.message : 'تعذّر إتمام التحليل.'}${issues}`,
-      );
+      setError(requestError);
     } finally {
       setLoading(false);
     }
@@ -68,6 +61,14 @@ export default function App() {
     setResult(null);
     setError(null);
   }, []);
+
+  const localizedError = error
+    ? `${apiErrorMessage(error, t)}${
+        language === 'ar' && error instanceof ApiRequestError && error.issues.length > 0
+          ? ` (${error.issues.map((issue) => issue.messageAr).join(' · ')})`
+          : ''
+      }`
+    : null;
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -79,37 +80,35 @@ export default function App() {
           <div className="flex flex-wrap items-center gap-2">
             <span className="badge bg-brand-50 text-brand-800 ring-1 ring-brand-200">
               <Activity className="h-3 w-3" />
-              دعم القرار السريري
+              {t('app.badge')}
             </span>
-            <span className="text-[11px] text-slate-500">مخصص للأطباء والممارسين الصحيين</span>
+            <span className="text-[11px] text-slate-500">{t('app.audience')}</span>
             {catalog?.governance.clinicalReviewRequired && (
               <span className="badge bg-amber-50 text-amber-800 ring-1 ring-amber-200">
-                محتوى غير مُراجع سريرياً
+                {t('app.governanceBadge')}
               </span>
             )}
           </div>
 
           <h1 className="mt-3 text-2xl font-bold tracking-tight text-brand-950 sm:text-[28px]">
-            تقييم سريري منظّم، مع تشخيصات تفاضلية قابلة للتفسير
+            {t('app.title')}
           </h1>
           <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-slate-600">
-            أدخل الأعراض الرئيسية والعلامات الحيوية للمريض، لتحصل على قائمة مرتّبة بالتشخيصات
-            المحتملة مع الفحوصات المطلوبة، الإجراءات الفورية، والأدوية والتحذيرات المرتبطة بكل
-            احتمال.
+            {t('app.intro')}
           </p>
 
           <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-[11.5px] text-slate-500">
             <li className="flex items-center gap-1.5">
               <Check className="h-3.5 w-3.5 text-emerald-600" />
-              محرك منطقي قابل للتفسير
+              {t('app.feature.explainable')}
             </li>
             <li className="flex items-center gap-1.5">
               <ClipboardList className="h-3.5 w-3.5 text-brand-600" />
-              فحوصات وإجراءات لكل تشخيص
+              {t('app.feature.tests')}
             </li>
             <li className="flex items-center gap-1.5">
               <ShieldAlert className="h-3.5 w-3.5 text-amber-600" />
-              لا تخزين لبيانات المرضى
+              {t('app.feature.noStorage')}
             </li>
           </ul>
         </section>
@@ -128,15 +127,21 @@ export default function App() {
               </div>
             )}
 
-            {!catalogLoading && catalogError && (
+            {!catalogLoading && catalogError !== null && (
               <div className="card border-rose-200 p-5" role="alert">
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="mt-0.5 h-5 w-5 text-rose-600" />
                   <div>
-                    <h2 className="text-[13.5px] font-bold text-rose-900">تعذّر تحميل الأداة</h2>
-                    <p className="mt-1 text-[12px] leading-relaxed text-rose-800">{catalogError}</p>
+                    <h2 className="text-[13.5px] font-bold text-rose-900">
+                      {t('app.catalogErrorTitle')}
+                    </h2>
+                    <p className="mt-1 text-[12px] leading-relaxed text-rose-800">
+                      {catalogError instanceof ApiRequestError
+                        ? apiErrorMessage(catalogError, t)
+                        : t('app.catalogErrorFallback')}
+                    </p>
                     <button type="button" onClick={() => void loadCatalog()} className="btn-ghost mt-3">
-                      إعادة المحاولة
+                      {t('common.retry')}
                     </button>
                   </div>
                 </div>
@@ -156,13 +161,14 @@ export default function App() {
           <aside
             ref={resultsRef}
             className="scroll-mt-20 lg:col-span-5 lg:sticky lg:top-20"
-            aria-label="لوحة نتائج التقييم"
+            aria-label={t('app.resultsLabel')}
           >
             <ResultsPanel
               result={result}
               loading={loading}
-              error={error}
+              error={localizedError}
               onDismissError={() => setError(null)}
+              symptoms={catalog?.symptoms ?? []}
             />
           </aside>
         </div>

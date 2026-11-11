@@ -20,12 +20,7 @@ function base(props: IconProps): IconProps {
 
 export function LogoMark({ className = 'h-10 w-10' }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 48 48"
-      className={className}
-      role="img"
-      aria-label="شعار أداة دعم القرار السريري"
-    >
+    <svg viewBox="0 0 48 48" className={className} aria-hidden focusable="false">
       <rect width="48" height="48" rx="12" fill="currentColor" />
       <path
         d="M12 25.5h6.2l2.6-6.4 4.4 12.6 3-8.2 2.2 2h5.6"

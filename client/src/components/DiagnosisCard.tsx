@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
-import type { DifferentialDiagnosis } from '../../../shared/types';
+import type { DifferentialDiagnosis, SymptomDefinition } from '../../../shared/types';
+import { useI18n } from '../i18n';
+import { conditionName, localizeFinding, specialtyLabel } from '../i18n/clinical';
 import { confidenceBarClass, confidenceTextClass } from '../lib/format';
 import { Bolt, ChevronDown, Flask, Pill, Scan, ShieldAlert } from './Icons';
 
@@ -7,6 +9,8 @@ interface Props {
   diagnosis: DifferentialDiagnosis;
   rank: number;
   defaultOpen?: boolean;
+  symptoms: SymptomDefinition[];
+  medicationsWithheld: boolean;
 }
 
 function ActionList({
@@ -57,8 +61,23 @@ function ActionList({
   );
 }
 
-export function DiagnosisCard({ diagnosis, rank, defaultOpen = false }: Props) {
+export function DiagnosisCard({
+  diagnosis,
+  rank,
+  defaultOpen = false,
+  symptoms,
+  medicationsWithheld,
+}: Props) {
+  const { language, t } = useI18n();
   const { actions } = diagnosis;
+  const name = conditionName(diagnosis, language);
+  const evidence = diagnosis.matchedEvidence.map((item) =>
+    localizeFinding(item, language, symptoms),
+  );
+  const missing = diagnosis.missingKeyFindings.map((item) =>
+    localizeFinding(item, language, symptoms),
+  );
+
   return (
     <details className="card group overflow-hidden" open={defaultOpen}>
       <summary className="flex cursor-pointer list-none items-start gap-3 p-4 transition hover:bg-slate-50/70">
@@ -68,12 +87,11 @@ export function DiagnosisCard({ diagnosis, rank, defaultOpen = false }: Props) {
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <h4 className="text-[13.5px] font-bold text-slate-900">{diagnosis.nameAr}</h4>
-            <span className="badge bg-slate-100 text-slate-600">{diagnosis.specialty.labelAr}</span>
+            <h4 className="text-[13.5px] font-bold text-slate-900">{name}</h4>
+            <span className="badge bg-slate-100 text-slate-600">
+              {specialtyLabel(diagnosis.specialty, language)}
+            </span>
           </div>
-          <p className="mt-0.5 truncate text-[11px] text-slate-400" dir="ltr">
-            {diagnosis.nameEn}
-          </p>
 
           <div className="mt-2 flex items-center gap-2">
             <div
@@ -82,7 +100,7 @@ export function DiagnosisCard({ diagnosis, rank, defaultOpen = false }: Props) {
               aria-valuenow={diagnosis.confidence}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label={`درجة الاحتمالية: ${diagnosis.confidence}%`}
+              aria-label={t('diagnosis.confidenceAria', { score: diagnosis.confidence })}
             >
               <div
                 className={`h-full rounded-full ${confidenceBarClass(diagnosis.confidence)}`}
@@ -107,10 +125,10 @@ export function DiagnosisCard({ diagnosis, rank, defaultOpen = false }: Props) {
           {diagnosis.matchedEvidence.length > 0 && (
             <div>
               <p className="mb-1 text-[10.5px] font-semibold text-slate-500">
-                أدلة داعمة من الإدخال
+                {t('diagnosis.evidence')}
               </p>
               <ul className="flex flex-wrap gap-1">
-                {diagnosis.matchedEvidence.map((item) => (
+                {evidence.map((item) => (
                   <li
                     key={item}
                     className="rounded-md bg-brand-50 px-1.5 py-0.5 text-[10.5px] font-medium text-brand-800 ring-1 ring-brand-100"
@@ -125,10 +143,10 @@ export function DiagnosisCard({ diagnosis, rank, defaultOpen = false }: Props) {
           {diagnosis.missingKeyFindings.length > 0 && (
             <div>
               <p className="mb-1 text-[10.5px] font-semibold text-slate-500">
-                علامات مميزة غير مُسجّلة
+                {t('diagnosis.missing')}
               </p>
               <ul className="flex flex-wrap gap-1">
-                {diagnosis.missingKeyFindings.map((item) => (
+                {missing.map((item) => (
                   <li
                     key={item}
                     className="rounded-md border border-dashed border-slate-300 px-1.5 py-0.5 text-[10.5px] text-slate-500"
@@ -144,7 +162,7 @@ export function DiagnosisCard({ diagnosis, rank, defaultOpen = false }: Props) {
         {diagnosis.discouragingFindings.length > 0 && (
           <div>
             <p className="mb-1 text-[10.5px] font-semibold text-slate-500">
-              عوامل لا تدعم هذا التشخيص
+              {t('diagnosis.against')}
             </p>
             <ul className="flex flex-wrap gap-1">
               {diagnosis.discouragingFindings.map((item) => (
@@ -161,12 +179,11 @@ export function DiagnosisCard({ diagnosis, rank, defaultOpen = false }: Props) {
 
         {diagnosis.redFlags.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[10.5px] font-semibold text-rose-700">أعلام حمراء:</span>
+            <span className="text-[10.5px] font-semibold text-rose-700">
+              {t('diagnosis.redFlags')}
+            </span>
             {diagnosis.redFlags.map((flag) => (
-              <span
-                key={flag}
-                className="badge bg-rose-50 text-rose-700 ring-1 ring-rose-200"
-              >
+              <span key={flag} className="badge bg-rose-50 text-rose-700 ring-1 ring-rose-200">
                 {flag}
               </span>
             ))}
@@ -174,20 +191,37 @@ export function DiagnosisCard({ diagnosis, rank, defaultOpen = false }: Props) {
         )}
 
         <div className="grid gap-2 sm:grid-cols-2">
-          <ActionList title="الفحوصات المخبرية" icon={<Flask className="h-3.5 w-3.5" />} items={actions.labs} />
-          <ActionList title="التصوير الطبي" icon={<Scan className="h-3.5 w-3.5" />} items={actions.imaging} />
           <ActionList
-            title="الإجراءات الفورية"
+            title={t('diagnosis.labs')}
+            icon={<Flask className="h-3.5 w-3.5" />}
+            items={actions.labs}
+          />
+          <ActionList
+            title={t('diagnosis.imaging')}
+            icon={<Scan className="h-3.5 w-3.5" />}
+            items={actions.imaging}
+          />
+          <ActionList
+            title={t('diagnosis.immediate')}
             icon={<Bolt className="h-3.5 w-3.5" />}
             items={actions.immediate}
           />
           <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3">
             <h5 className="mb-2 flex items-center gap-1.5 text-[11.5px] font-bold text-slate-700">
               <Pill className="h-3.5 w-3.5 text-brand-700" />
-              الأدوية المقترحة
+              {t('diagnosis.medications')}
             </h5>
-            {actions.medications.length === 0 ? (
-              <p className="text-[11.5px] text-slate-500">لا توجد أدوية محددة في هذه الحالة.</p>
+            {medicationsWithheld ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-2.5">
+                <p className="text-[11px] font-bold text-amber-900">
+                  {t('diagnosis.medicationsWithheldTitle')}
+                </p>
+                <p className="mt-1 text-[10.5px] leading-relaxed text-amber-900/90">
+                  {t('diagnosis.medicationsWithheldBody')}
+                </p>
+              </div>
+            ) : actions.medications.length === 0 ? (
+              <p className="text-[11.5px] text-slate-500">{t('diagnosis.noMedications')}</p>
             ) : (
               <ul className="space-y-2">
                 {actions.medications.map((medication) => (
@@ -204,7 +238,7 @@ export function DiagnosisCard({ diagnosis, rank, defaultOpen = false }: Props) {
         </div>
 
         <ActionList
-          title="تحذيرات وموانع الاستخدام"
+          title={t('diagnosis.alerts')}
           tone="danger"
           icon={<ShieldAlert className="h-3.5 w-3.5" />}
           items={actions.alerts}

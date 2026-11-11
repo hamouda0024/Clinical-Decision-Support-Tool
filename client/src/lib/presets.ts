@@ -1,9 +1,10 @@
+import type { TranslationKey } from '../i18n/translations/ar';
 import type { FormState } from './form';
 
 export interface Preset {
   id: string;
-  label: string;
-  hint: string;
+  labelKey: TranslationKey;
+  hintKey: TranslationKey;
   form: FormState;
 }
 
@@ -13,8 +14,8 @@ const baseVitals = { systolicBP: '', diastolicBP: '', heartRate: '', temperature
 export const PRESETS: Preset[] = [
   {
     id: 'chest',
-    label: 'ألم صدري',
-    hint: '58 سنة · طوارئ',
+    labelKey: 'preset.chest',
+    hintKey: 'preset.chestHint',
     form: {
       age: '58',
       sex: 'male',
@@ -27,8 +28,8 @@ export const PRESETS: Preset[] = [
   },
   {
     id: 'respiratory',
-    label: 'حرارة وسعال',
-    hint: '67 سنة · باطنية',
+    labelKey: 'preset.respiratory',
+    hintKey: 'preset.respiratoryHint',
     form: {
       age: '67',
       sex: 'male',
@@ -41,8 +42,8 @@ export const PRESETS: Preset[] = [
   },
   {
     id: 'abdominal',
-    label: 'ألم بطني',
-    hint: '24 سنة · جراحة',
+    labelKey: 'preset.abdominal',
+    hintKey: 'preset.abdominalHint',
     form: {
       age: '24',
       sex: 'female',

@@ -1,6 +1,9 @@
+import { useI18n } from '../i18n';
 import { ShieldAlert } from './Icons';
 
 export function DisclaimerBanner() {
+  const { t } = useI18n();
+
   return (
     <section
       id="disclaimer"
@@ -11,12 +14,10 @@ export function DisclaimerBanner() {
         <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
         <div>
           <h2 id="disclaimer-title" className="text-[13px] font-bold text-amber-900">
-            إخلاء مسؤولية طبي
+            {t('disclaimer.title')}
           </h2>
           <p className="mt-0.5 text-[12px] leading-relaxed text-amber-900/90">
-            هذه الأداة تعليمية لدعم القرار السريري فقط، ولا تُعدّ تشخيصاً نهائياً ولا بديلاً عن
-            التقييم السريري المباشر والفحص البدني واستشارة الطبيب المختص. النتائج احتمالية ومبنية على
-            قاعدة معرفة مبسطة، ويجب التحقق منها دائماً وفق المعايير المعتمدة وحالة كل مريض على حدة.
+            {t('disclaimer.body')}
           </p>
         </div>
       </div>

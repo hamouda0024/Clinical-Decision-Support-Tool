@@ -1,41 +1,30 @@
 import type { TriageLevel, VitalStatus } from '../../../shared/types';
 
+/** Colour treatments only: labels come from the translation dictionaries. */
 export const TRIAGE_STYLES: Record<
   TriageLevel,
-  { wrapper: string; badge: string; dot: string; label: string }
+  { wrapper: string; badge: string; dot: string }
 > = {
   emergency: {
     wrapper: 'border-rose-200 bg-rose-50/80 text-rose-950',
     badge: 'bg-rose-600 text-white',
     dot: 'bg-rose-500',
-    label: 'طارئ',
   },
   urgent: {
     wrapper: 'border-amber-200 bg-amber-50/80 text-amber-950',
     badge: 'bg-amber-500 text-white',
     dot: 'bg-amber-500',
-    label: 'عاجل',
   },
   semi_urgent: {
     wrapper: 'border-sky-200 bg-sky-50/80 text-sky-950',
     badge: 'bg-sky-600 text-white',
     dot: 'bg-sky-500',
-    label: 'شبه عاجل',
   },
   routine: {
     wrapper: 'border-emerald-200 bg-emerald-50/80 text-emerald-950',
     badge: 'bg-emerald-600 text-white',
     dot: 'bg-emerald-500',
-    label: 'روتيني',
   },
-};
-
-export const VITAL_STATUS_LABEL: Record<VitalStatus, string> = {
-  critical_low: 'منخفض جداً',
-  low: 'منخفض',
-  normal: 'طبيعي',
-  high: 'مرتفع',
-  critical_high: 'مرتفع جداً',
 };
 
 export function vitalStatusClass(status: VitalStatus): string {
@@ -61,22 +50,4 @@ export function confidenceTextClass(score: number): string {
   if (score >= 60) return 'text-brand-800';
   if (score >= 35) return 'text-brand-700';
   return 'text-slate-600';
-}
-
-export function formatDateTime(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('ar-u-nu-latn', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date);
-}
-
-export function formatDuration(value: number, unit: 'hours' | 'days' | 'weeks'): string {
-  const labels: Record<typeof unit, string> = {
-    hours: value === 1 ? 'ساعة' : 'ساعات',
-    days: value === 1 ? 'يوم' : 'أيام',
-    weeks: value === 1 ? 'أسبوع' : 'أسابيع',
-  };
-  return `${value} ${labels[unit]}`;
 }

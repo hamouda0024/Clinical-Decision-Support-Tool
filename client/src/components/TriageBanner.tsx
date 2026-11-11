@@ -1,9 +1,12 @@
 import type { TriageAssessment } from '../../../shared/types';
+import { useI18n, type TranslationKey } from '../i18n';
 import { TRIAGE_STYLES } from '../lib/format';
 import { AlertTriangle } from './Icons';
 
 export function TriageBanner({ triage }: { triage: TriageAssessment }) {
+  const { language, t } = useI18n();
   const style = TRIAGE_STYLES[triage.level];
+
   return (
     <section
       aria-labelledby="triage-title"
@@ -17,12 +20,22 @@ export function TriageBanner({ triage }: { triage: TriageAssessment }) {
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={`badge ${style.badge}`}>{style.label}</span>
+            <span className={`badge ${style.badge}`}>
+              {t(`triage.${triage.level}` as TranslationKey)}
+            </span>
             <h2 id="triage-title" className="text-[14.5px] font-bold">
               {triage.labelAr}
             </h2>
           </div>
-          <p className="mt-1 text-[12px] leading-relaxed opacity-90">{triage.descriptionAr}</p>
+          <p className="mt-1 text-[12px] leading-relaxed opacity-90">
+            {triage.descriptionAr}
+          </p>
+
+          {language !== 'ar' && (
+            <p className="mt-2 text-[10px] leading-relaxed opacity-70">
+              {t('contentPolicy.notice')}
+            </p>
+          )}
           <ul className="mt-2 space-y-1">
             {triage.reasons.slice(0, 5).map((reason) => (
               <li key={reason} className="flex items-start gap-1.5 text-[11.5px] leading-relaxed">
@@ -35,14 +48,16 @@ export function TriageBanner({ triage }: { triage: TriageAssessment }) {
 
         <div
           className="shrink-0 rounded-xl bg-white/60 px-2.5 py-1.5 text-center ring-1 ring-current/10"
-          title="درجة إنذار مبسّطة من خمس علامات حيوية — ليست NEWS2"
+          title={t('triage.ewsTitle')}
         >
-          <p className="text-[9px] font-semibold tracking-wide uppercase opacity-60">EWS مبسّط</p>
+          <p className="text-[9px] font-semibold tracking-wide uppercase opacity-60">
+            {t('triage.ews')}
+          </p>
           <p className="text-xl leading-tight font-bold">
             {triage.earlyWarningScore}
             <span className="text-[10px] font-medium opacity-60"> / {triage.earlyWarningMax}</span>
           </p>
-          <p className="text-[9px] opacity-60">ليست NEWS2</p>
+          <p className="text-[9px] opacity-60">{t('triage.notNews2')}</p>
         </div>
       </div>
     </section>

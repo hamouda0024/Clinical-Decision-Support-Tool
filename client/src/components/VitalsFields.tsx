@@ -1,4 +1,6 @@
 import type { VitalDefinition, VitalId } from '../../../shared/types';
+import { useI18n } from '../i18n';
+import { vitalLabel, vitalUnit } from '../i18n/clinical';
 import type { FormErrors } from '../lib/form';
 
 interface Props {
@@ -9,6 +11,8 @@ interface Props {
 }
 
 export function VitalsFields({ definitions, values, errors, onChange }: Props) {
+  const { language, t } = useI18n();
+
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {definitions.map((vital) => {
@@ -18,7 +22,7 @@ export function VitalsFields({ definitions, values, errors, onChange }: Props) {
         return (
           <div key={vital.id} className={vital.id === 'spo2' ? 'sm:col-span-2' : undefined}>
             <label htmlFor={inputId} className="label">
-              {vital.labelAr}
+              {vitalLabel(vital, language)}
             </label>
             <div className="relative">
               <input
@@ -38,12 +42,15 @@ export function VitalsFields({ definitions, values, errors, onChange }: Props) {
                 required
               />
               <span className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10.5px] font-medium text-slate-500">
-                {vital.unit}
+                {vitalUnit(vital, language)}
               </span>
             </div>
             <p id={hintId} className={error ? 'field-error' : 'help'}>
-              {error ?? `المدى الطبيعي المرجعي للبالغين: ${vital.referenceAr}`}
+              {error ?? t('vitals.normalRange', { range: vital.referenceAr })}
             </p>
+            {language !== 'ar' && !error && (
+              <p className="mt-0.5 text-[9.5px] text-slate-400">{vital.referenceAr}</p>
+            )}
           </div>
         );
       })}

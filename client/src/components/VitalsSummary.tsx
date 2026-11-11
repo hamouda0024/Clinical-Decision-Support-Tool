@@ -1,14 +1,18 @@
 import type { VitalEvaluation } from '../../../shared/types';
-import { VITAL_STATUS_LABEL, vitalStatusClass } from '../lib/format';
+import { useI18n } from '../i18n';
+import { vitalLabelById, vitalStatusLabel, vitalUnitById } from '../i18n/clinical';
+import { vitalStatusClass } from '../lib/format';
 import { HeartPulse } from './Icons';
 
 export function VitalsSummary({ vitals }: { vitals: VitalEvaluation[] }) {
+  const { language, t } = useI18n();
+
   return (
     <section className="card p-4" aria-labelledby="vitals-summary-title">
       <div className="mb-3 flex items-center gap-2">
         <HeartPulse className="h-4 w-4 text-rose-500" />
         <h2 id="vitals-summary-title" className="text-[13px] font-bold text-slate-800">
-          تقييم العلامات الحيوية
+          {t('vitals.summaryTitle')}
         </h2>
       </div>
 
@@ -18,17 +22,21 @@ export function VitalsSummary({ vitals }: { vitals: VitalEvaluation[] }) {
             key={vital.id}
             className="rounded-xl border border-slate-200/80 bg-slate-50/60 px-3 py-2"
           >
-            <dt className="text-[10.5px] font-medium text-slate-500">{vital.labelAr}</dt>
+            <dt className="text-[10.5px] font-medium text-slate-500">
+              {vitalLabelById(vital.id, language, vital.labelAr)}
+            </dt>
             <dd className="mt-1 flex items-baseline gap-1">
               <span className="text-[15px] font-bold text-slate-900">{vital.value}</span>
-              <span className="text-[10px] text-slate-500">{vital.unit}</span>
+              <span className="text-[10px] text-slate-500">
+                {vitalUnitById(vital.id, language, vital.unit)}
+              </span>
             </dd>
             <dd className="mt-1">
               <span
                 className={`badge ring-1 ${vitalStatusClass(vital.status)}`}
                 title={vital.noteAr}
               >
-                {VITAL_STATUS_LABEL[vital.status]}
+                {vitalStatusLabel(vital.status)}
               </span>
             </dd>
           </div>
@@ -41,7 +49,10 @@ export function VitalsSummary({ vitals }: { vitals: VitalEvaluation[] }) {
             .filter((vital) => vital.status !== 'normal')
             .map((vital) => (
               <li key={vital.id} className="text-[11px] leading-relaxed text-slate-600">
-                <span className="font-semibold text-slate-700">{vital.labelAr}:</span> {vital.noteAr}
+                <span className="font-semibold text-slate-700">
+                  {vitalLabelById(vital.id, language, vital.labelAr)}:
+                </span>{' '}
+                {vital.noteAr}
               </li>
             ))}
         </ul>
