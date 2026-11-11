@@ -72,22 +72,28 @@ describe('language resolution and direction', () => {
 });
 
 describe('medical content policy', () => {
-  it('keeps symptoms and condition names in Arabic in every interface language', () => {
+  it('localizes catalogue labels and keeps condition narratives in Arabic', () => {
     expect(CLINICAL_CONTENT_POLICY).toEqual({
-      contentLanguage: 'ar',
-      translationsAvailable: false,
+      catalogueLabelsTranslated: true,
+      narrativeLanguage: 'ar',
       translationStatus: 'pending_medical_review',
     });
 
     const fever = SYMPTOMS.find((symptom) => symptom.id === 'fever')!;
     expect(symptomLabel(fever, 'ar')).toBe(fever.labelAr);
-    expect(symptomLabel(fever, 'en')).toBe(fever.labelAr);
-    expect(symptomLabel(fever, 'fr')).toBe(fever.labelAr);
+    expect(symptomLabel(fever, 'en')).toBe(fever.labelEn);
+    expect(symptomLabel(fever, 'fr')).toBe(fever.labelFr);
 
     const es = DISEASES.find((disease) => disease.id === 'acute_coronary_syndrome')!;
     expect(conditionName(es, 'ar')).toBe(es.nameAr);
     expect(conditionName(es, 'en')).toBe(es.nameAr);
     expect(conditionName(es, 'fr')).toBe(es.nameAr);
+  });
+
+  it('falls back to Arabic when a catalogue translation is absent', () => {
+    const fever = SYMPTOMS.find((symptom) => symptom.id === 'fever')!;
+    const noFrench = { ...fever, labelFr: undefined };
+    expect(symptomLabel(noFrench, 'fr')).toBe(fever.labelAr);
   });
 
   it('keeps the 24 condition ids and 58 symptom ids stable', () => {

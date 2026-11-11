@@ -249,7 +249,7 @@ npm run dev:server
 npm test
 ```
 
-تغطي الاختبارات (84 اختباراً):
+تغطي الاختبارات (91 اختباراً):
 
 - **محرك القرار:** ترتيب التشخيصات، رفع مستوى الفرز عند نقص الأكسجة، سقف درجة
   الاحتمال، الأدلة السلبية، توافق مدة الأعراض، والشفافية (الأدلة/العلامات الناقصة).
@@ -336,6 +336,7 @@ npm run build:pages   # الناتج في dist/pages، بمسار أساس /Clin
 demo for physicians (Arabic RTL, French and English LTR). React + TypeScript SPA,
 Express + Zod API, 24-entry educational knowledge base, explainable differential
 scoring, rule-based triage, content-governance metadata, paediatric and medication
-safety gates, inactive future-content schemas, hardened HTTP layer, and 84
-automated tests. Medical content remains Arabic-only pending physician review. Educational use only — not a diagnosis,
+safety gates, inactive future-content schemas, localized catalogue labels,
+hardened HTTP layer, and 91 automated tests. Clinical narratives remain Arabic-only, while catalogue labels are
+localized with Arabic fallback pending physician review. Educational use only — not a diagnosis,
 not a substitute for clinical assessment, and never for storing patient data.</sub>

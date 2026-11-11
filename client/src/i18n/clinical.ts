@@ -1,5 +1,5 @@
 import type {
-  DurationUnit,
+  DurationUnitDefinition,
   SymptomDefinition,
   SymptomGroup,
   SpecialtyDefinition,
@@ -7,24 +7,36 @@ import type {
   VitalId,
   VitalStatus,
 } from '../../../shared/types';
+import { VITALS } from '../../../server/data/catalog';
 import type { Language } from './index';
 
 /**
  * Medical content policy for the current phase.
  *
- * The clinical knowledge base has not been translated or reviewed in French or
- * English. Medical terms and narratives are therefore always rendered from the
- * Arabic source, whatever the interface language is. The language argument is
- * kept on these helpers so a future, physician-approved translation can be
- * introduced in one place without changing ids, scoring or components.
- *
- * Do not add machine-translated medical content here.
+ * Catalogue terminology (symptoms, groups, specialties, vital signs and units)
+ * is translated so the input form follows the selected interface language.
+ * Translations are still pending physician review. Condition names, summaries,
+ * findings and recommendations remain Arabic-only because they are clinical
+ * narrative content and have not been translated or reviewed.
  */
 export const CLINICAL_CONTENT_POLICY = {
-  contentLanguage: 'ar',
-  translationsAvailable: false,
+  catalogueLabelsTranslated: true,
+  narrativeLanguage: 'ar',
   translationStatus: 'pending_medical_review',
 } as const;
+
+function localizedLabel(
+  language: Language,
+  ar: string,
+  fr?: string,
+  en?: string,
+): string {
+  if (language === 'fr' && fr?.trim()) return fr;
+  if (language === 'en' && en?.trim()) return en;
+  return ar;
+}
+
+const VITAL_BY_ID = new Map(VITALS.map((vital) => [vital.id, vital]));
 
 const VITAL_STATUS_LABELS_AR: Record<VitalStatus, string> = {
   critical_low: 'منخفض جداً',
@@ -34,43 +46,42 @@ const VITAL_STATUS_LABELS_AR: Record<VitalStatus, string> = {
   critical_high: 'مرتفع جداً',
 };
 
-/** Symptom terms are part of the unreviewed medical content: Arabic only. */
-export function symptomLabel(symptom: SymptomDefinition, _language: Language): string {
-  return symptom.labelAr;
+export function symptomLabel(symptom: SymptomDefinition, language: Language): string {
+  return localizedLabel(language, symptom.labelAr, symptom.labelFr, symptom.labelEn);
 }
 
-export function symptomGroupLabel(group: SymptomGroup, _language: Language): string {
-  return group.labelAr;
+export function symptomGroupLabel(group: SymptomGroup, language: Language): string {
+  return localizedLabel(language, group.labelAr, group.labelFr, group.labelEn);
 }
 
-/** Specialty labels are clinical taxonomy, so they follow the same policy. */
 export function specialtyLabel(
   specialty: SpecialtyDefinition,
-  _language: Language,
+  language: Language,
 ): string {
-  return specialty.labelAr;
+  return localizedLabel(language, specialty.labelAr, specialty.labelFr, specialty.labelEn);
 }
 
-export function vitalLabel(vital: VitalDefinition, _language: Language): string {
-  return vital.labelAr;
+export function vitalLabel(vital: VitalDefinition, language: Language): string {
+  return localizedLabel(language, vital.labelAr, vital.labelFr, vital.labelEn);
 }
 
 export function vitalLabelById(
-  _id: VitalId,
-  _language: Language,
+  id: VitalId,
+  language: Language,
   fallback: string,
 ): string {
-  return fallback;
+  const vital = VITAL_BY_ID.get(id);
+  return vital ? vitalLabel(vital, language) : fallback;
 }
 
-/** Units are notation rather than medical text; bpm is clearer for LTR layouts. */
+/** Units are notation; Arabic remains the fallback when no translation exists. */
 export function vitalUnit(vital: VitalDefinition, language: Language): string {
-  if (vital.id === 'heartRate' && language !== 'ar') return 'bpm';
-  return vital.unit;
+  return localizedLabel(language, vital.unit, vital.unitFr, vital.unitEn);
 }
 
 export function vitalUnitById(id: VitalId, language: Language, fallback: string): string {
-  return id === 'heartRate' && language !== 'ar' ? 'bpm' : fallback;
+  const vital = VITAL_BY_ID.get(id);
+  return vital ? vitalUnit(vital, language) : fallback;
 }
 
 export function vitalStatusLabel(status: VitalStatus): string {
@@ -78,13 +89,11 @@ export function vitalStatusLabel(status: VitalStatus): string {
 }
 
 /** Duration units are interface copy, not clinical terminology. */
-export function durationUnitLabel(id: DurationUnit, language: Language): string {
-  if (language === 'ar') {
-    return id === 'hours' ? 'ساعة' : id === 'days' ? 'يوم' : 'أسبوع';
-  }
-  return id === 'hours' ? (language === 'fr' ? 'heures' : 'hours')
-    : id === 'days' ? (language === 'fr' ? 'jours' : 'days')
-      : language === 'fr' ? 'semaines' : 'weeks';
+export function durationUnitLabel(
+  unit: DurationUnitDefinition,
+  language: Language,
+): string {
+  return localizedLabel(language, unit.labelAr, unit.labelFr, unit.labelEn);
 }
 
 /**
@@ -100,7 +109,7 @@ export function conditionName(
 
 /**
  * Evidence returned by the engine is already Arabic. Do not translate it here:
- * it is clinical content, not interface copy.
+ * it is clinical narrative content, not interface copy.
  */
 export function localizeFinding(
   text: string,

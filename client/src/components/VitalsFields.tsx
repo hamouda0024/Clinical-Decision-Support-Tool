@@ -48,9 +48,6 @@ export function VitalsFields({ definitions, values, errors, onChange }: Props) {
             <p id={hintId} className={error ? 'field-error' : 'help'}>
               {error ?? t('vitals.normalRange', { range: vital.referenceAr })}
             </p>
-            {language !== 'ar' && !error && (
-              <p className="mt-0.5 text-[9.5px] text-slate-400">{vital.referenceAr}</p>
-            )}
           </div>
         );
       })}

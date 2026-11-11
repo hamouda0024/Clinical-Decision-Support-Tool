@@ -61,7 +61,7 @@ export const fr: Record<TranslationKey, string> = {
   'form.duration.label': 'Durée des symptômes',
   'form.duration.placeholder': 'ex. 3',
   'form.duration.unitAria': 'Unité de durée des symptômes',
-  'form.section.symptoms': 'Symptômes principaux (Chief Complaints)',
+  'form.section.symptoms': 'Symptômes principaux',
   'form.section.vitals': 'Signes vitaux',
   'form.symptom.help':
     'Un point rouge signale un symptôme pouvant être associé à une situation nécessitant une évaluation urgente. Sélectionnez tout ce qui s’applique au patient.',
@@ -75,7 +75,7 @@ export const fr: Record<TranslationKey, string> = {
   'symptoms.clear': 'Effacer la sélection',
   'symptoms.selectedAria': 'Symptômes sélectionnés',
   'symptoms.remove': 'Retirer {name}',
-  'symptoms.searchPlaceholder': 'Rechercher dans la liste (termes en arabe)…',
+  'symptoms.searchPlaceholder': 'Rechercher dans la liste des symptômes…',
   'symptoms.searchAria': 'Rechercher dans la liste des symptômes',
   'symptoms.empty': 'Aucun symptôme ne correspond à votre recherche. Essayez un autre terme.',
   'symptoms.redFlagTitle': 'Peut indiquer une situation nécessitant une évaluation urgente',
@@ -111,9 +111,9 @@ export const fr: Record<TranslationKey, string> = {
     'Moteur d’analyse v{version} · Base de connaissances : {entries} cas · Généré : {time}',
   'results.dismissError': 'Fermer l’alerte',
   'contentPolicy.notice':
-    'Le contenu médical est affiché en arabe uniquement à ce stade, jusqu’à validation par la médecin de traductions revues. Une interface traduite ne signifie pas que le contenu clinique est approuvé.',
+    'Les libellés des symptômes, groupes, spécialités et signes vitaux suivent la langue de l’interface et restent en attente de validation médicale. Les noms de pathologies, résumés, examens, gestes et mises en garde restent en arabe uniquement.',
   'results.narrativeNotice':
-    'Les noms de pathologies, symptômes, résumés, examens, gestes et mises en garde sont tous affichés en arabe uniquement jusqu’à validation d’une traduction clinique revue.',
+    'Les noms de pathologies, résumés, examens, gestes et mises en garde restent en arabe uniquement jusqu’à validation d’une traduction clinique revue.',
 
   'diagnosis.evidence': 'Arguments issus de la saisie',
   'diagnosis.missing': 'Signes clés non renseignés',

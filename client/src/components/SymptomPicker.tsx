@@ -26,12 +26,10 @@ export function SymptomPicker({ symptoms, groups, selected, onToggle, onClear, m
   const normalizedQuery = query.trim().toLowerCase();
   const filtered = useMemo(() => {
     if (!normalizedQuery) return symptoms;
-    return symptoms.filter((symptom) => {
-      // Only the Arabic source term is displayed; matching it is enough and
-      // avoids implying that an unreviewed translation exists.
-      return symptom.labelAr.toLowerCase().includes(normalizedQuery);
-    });
-  }, [symptoms, normalizedQuery]);
+    return symptoms.filter((symptom) =>
+      symptomLabel(symptom, language).toLowerCase().includes(normalizedQuery),
+    );
+  }, [symptoms, normalizedQuery, language]);
 
   const grouped = useMemo(
     () =>

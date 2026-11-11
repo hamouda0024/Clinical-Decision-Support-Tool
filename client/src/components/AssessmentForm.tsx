@@ -256,7 +256,7 @@ export function AssessmentForm({ catalog, loading, onSubmit, onResetResult }: Pr
                   >
                     {catalog.durationUnits.map((unit) => (
                       <option key={unit.id} value={unit.id}>
-                        {durationUnitLabel(unit.id, language)}
+                        {durationUnitLabel(unit, language)}
                       </option>
                     ))}
                   </select>

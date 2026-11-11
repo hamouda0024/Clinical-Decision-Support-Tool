@@ -33,18 +33,22 @@ export interface AssessmentInput {
   vitals: Vitals;
 }
 
-export interface SymptomDefinition {
-  id: string;
+export interface LocalizedLabel {
   labelAr: string;
-  labelEn: string;
+  /** Catalogue translations are pending physician review. */
+  labelFr?: string;
+  labelEn?: string;
+}
+
+export interface SymptomDefinition extends LocalizedLabel {
+  id: string;
   group: SymptomGroupId;
   /** Marks symptoms that may indicate a time-critical condition. */
   redFlag?: boolean;
 }
 
-export interface SymptomGroup {
+export interface SymptomGroup extends LocalizedLabel {
   id: SymptomGroupId;
-  labelAr: string;
 }
 
 export type SymptomGroupId =
@@ -59,10 +63,8 @@ export type SymptomGroupId =
   | 'psychiatric'
   | 'context';
 
-export interface SpecialtyDefinition {
+export interface SpecialtyDefinition extends LocalizedLabel {
   id: SpecialtyId;
-  labelAr: string;
-  labelEn: string;
 }
 
 export type SpecialtyId =
@@ -78,10 +80,12 @@ export type SpecialtyId =
   | 'psychiatry'
   | 'family_medicine';
 
-export interface VitalDefinition {
+export interface VitalDefinition extends LocalizedLabel {
   id: VitalId;
-  labelAr: string;
+  /** Arabic fallback and the unit shown in the engine result. */
   unit: string;
+  unitFr?: string;
+  unitEn?: string;
   min: number;
   max: number;
   step: number;
@@ -89,12 +93,16 @@ export interface VitalDefinition {
   referenceAr: string;
 }
 
+export interface DurationUnitDefinition extends LocalizedLabel {
+  id: DurationUnit;
+}
+
 export interface CatalogResponse {
   symptoms: SymptomDefinition[];
   symptomGroups: SymptomGroup[];
   specialties: SpecialtyDefinition[];
   vitals: VitalDefinition[];
-  durationUnits: { id: DurationUnit; labelAr: string }[];
+  durationUnits: DurationUnitDefinition[];
   limits: { minAge: number; maxAge: number; maxSymptoms: number };
   governance: GovernanceSummary;
 }

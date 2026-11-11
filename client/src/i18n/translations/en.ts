@@ -73,7 +73,7 @@ export const en: Record<TranslationKey, string> = {
   'symptoms.clear': 'Clear selection',
   'symptoms.selectedAria': 'Selected symptoms',
   'symptoms.remove': 'Remove {name}',
-  'symptoms.searchPlaceholder': 'Search the symptom list (terms in Arabic)…',
+  'symptoms.searchPlaceholder': 'Search the symptom list…',
   'symptoms.searchAria': 'Search the symptom list',
   'symptoms.empty': 'No symptoms match your search. Try another term.',
   'symptoms.redFlagTitle': 'May indicate a condition that needs urgent assessment',
@@ -109,9 +109,9 @@ export const en: Record<TranslationKey, string> = {
     'Analysis engine v{version} · Knowledge base: {entries} conditions · Generated: {time}',
   'results.dismissError': 'Dismiss alert',
   'contentPolicy.notice':
-    'Medical content is shown in Arabic only at this stage, until the reviewing physician approves translated content. A translated interface does not mean the clinical content is approved.',
+    'Symptom, group, specialty and vital-sign labels follow the interface language and remain pending medical validation. Condition names, summaries, tests, actions and warnings remain Arabic-only.',
   'results.narrativeNotice':
-    'Condition names, symptoms, summaries, tests, actions and warnings are all shown in Arabic only until a reviewed clinical translation is approved.',
+    'Condition names, summaries, tests, actions and warnings remain Arabic-only until a reviewed clinical translation is approved.',
 
   'diagnosis.evidence': 'Supporting evidence from the input',
   'diagnosis.missing': 'Key findings not recorded',
