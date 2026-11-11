@@ -11,10 +11,18 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:3000',
     trace: 'retain-on-failure',
   },
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://127.0.0.1:3000',
-    reuseExistingServer: true,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command: 'npm run dev:server',
+      url: 'http://127.0.0.1:4000/api/health',
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+    {
+      command: 'npm run dev:client',
+      url: 'http://127.0.0.1:3000',
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+  ],
 });
